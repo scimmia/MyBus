@@ -10,11 +10,13 @@ public class BusPositionParam {
     String stationID;
     String lineID;
     String lineStatus;
+    String attach;
 
-    public BusPositionParam(String stationID, String lineID, String lineStatus) {
+    public BusPositionParam(String stationID, String lineID, String lineStatus,String attach) {
         this.stationID = stationID;
         this.lineID = lineID;
         this.lineStatus = lineStatus;
+        this.attach = attach;
     }
 
     public String getParam(String strSession){
@@ -27,7 +29,7 @@ public class BusPositionParam {
                 .add("lineID", lineID)
                 .add("lineStatus", lineStatus)
                 .add("userRole", "1")
-                .add("attach", "1")
+                .add("attach", attach)
                 .add("strSession", strSession)
                 .add("strFlag", "JIAODONG")
                 .add("strIMEI", "76667")

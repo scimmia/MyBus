@@ -17,15 +17,15 @@ public class GlobalData {
         switch (checkType){
             case GOOFFICE:
                 //gotoWork
-                params.add(new BusPositionParam("133","3","2"));
-                params.add(new BusPositionParam("133","68","2"));
-                params.add(new BusPositionParam("133","7","1"));
+                params.add(new BusPositionParam("133","3","2","1"));
+                params.add(new BusPositionParam("133","68","2","1"));
+                params.add(new BusPositionParam("133","7","1","1"));
                 break;
             case GOHOME:
                 //gotoWork
-                params.add(new BusPositionParam("164","3","1"));
-                params.add(new BusPositionParam("164","68","1"));
-                params.add(new BusPositionParam("164","7","2"));//6
+                params.add(new BusPositionParam("164","3","1","1"));
+                params.add(new BusPositionParam("164","68","1","1"));
+                params.add(new BusPositionParam("164","7","2","1"));//6
                 break;
         }
         return params;
