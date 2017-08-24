@@ -1,7 +1,9 @@
-package com.scimmia.mybus.utils;
+package com.scimmia.mybus.utils.bean;
 
 import okhttp3.FormBody;
 import okhttp3.RequestBody;
+
+import java.util.UUID;
 
 /**
  * Created by lk on 2017/8/10.
@@ -12,7 +14,15 @@ public class BusPositionParam {
     String lineStatus;
     String attach;
 
-    public BusPositionParam(String stationID, String lineID, String lineStatus,String attach) {
+    public String getAttach() {
+        return attach;
+    }
+
+    public String getLineID() {
+        return lineID;
+    }
+
+    public BusPositionParam(String stationID, String lineID, String lineStatus, String attach) {
         this.stationID = stationID;
         this.lineID = lineID;
         this.lineStatus = lineStatus;
@@ -32,7 +42,7 @@ public class BusPositionParam {
                 .add("attach", attach)
                 .add("strSession", strSession)
                 .add("strFlag", "JIAODONG")
-                .add("strIMEI", "76667")
+                .add("strIMEI", UUID.randomUUID().toString().replaceAll("-", "").substring(0,8))
                 .build();
     }
 }

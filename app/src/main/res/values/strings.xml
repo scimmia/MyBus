@@ -1,3 +1,37 @@
 <resources>
-    <string name="app_name">MyBus</string>
+    <string name="app_name">烟台公交定制版</string>
+    <string name="title_activity_line_list">LineListActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="cheese_hunt_hint">请输入要查询的线路</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="addwork">收藏为上班</string>
+    <string name="addhome">收藏为下班</string>
+    <string name="addnormal">收藏为普通</string>
+
+    <string-array name="array_title">
+        <item>点击下载安装官方应用</item>
+        <item>关于</item>
+        <item>快速删除收藏</item>
+        <item>收藏为上班，下班，普通的区别</item>
+        <item>上下班的定位地址错误的解决办法</item>
+        <item>联系我</item>
+    </string-array>
+
+    <string-array name="array_content">
+        <item>http://m.jiaodong.net/gongjiao/JiaoDongBus.apk
+        </item>
+        <item>尊敬的用户，本应用旨在增加路况信息便于合理安排出行，使用过程中如有不适，请选择使用官方应用。
+        </item>
+        <item>在该条目上右滑
+        </item>
+        <item>在“实时”页面，可通过点击按钮显示所有上下班线路车辆，供合理安排乘车方案。
+        </item>
+        <item>
+            收藏多个线路站点的情况会以第一个收藏的该类站点做为地图中心点，试着将第一个站点删除，将其他站点做为第一再添加看能否解决。
+
+        </item>
+        <item>请发邮件至wanguanjinrong@hotmail.com</item>
+    </string-array>
 </resources>

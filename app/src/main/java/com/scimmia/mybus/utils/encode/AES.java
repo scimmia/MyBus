@@ -1,4 +1,4 @@
-package com.scimmia.mybus.utils;
+package com.scimmia.mybus.utils.encode;
 
 /**
  * Created by lk on 2017/8/10.

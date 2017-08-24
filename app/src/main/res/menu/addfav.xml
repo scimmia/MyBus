@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menu_addwork"
+          android:icon="@drawable/gowork"
+          android:title="@string/addwork" />
+    <item android:id="@+id/menu_addhome"
+          android:icon="@drawable/gohome"
+          android:title="@string/addhome" />
+    <item android:id="@+id/menu_addnormal"
+          android:icon="@drawable/fav_normal"
+          android:title="@string/addnormal" />
+</menu>

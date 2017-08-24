@@ -1,4 +1,4 @@
-package com.scimmia.mybus;
+package com.scimmia.mybus.utils.bean;
 
 import com.amap.api.maps2d.CoordinateConverter;
 import com.amap.api.maps2d.model.LatLng;
@@ -17,11 +17,38 @@ public class BusPosition {
      * 站内外 : 0
      */
 
+    private String lineName;
     private String ID;
+    private String carID;
+    private String stationID;
     private String GPSX;
     private String GPSY;
     private String distance;
     private LatLng latLng;
+
+    public String getLineName() {
+        return lineName;
+    }
+
+    public void setLineName(String lineName) {
+        this.lineName = lineName;
+    }
+
+    public String getCarID() {
+        return carID;
+    }
+
+    public void setCarID(String carID) {
+        this.carID = carID;
+    }
+
+    public String getStationID() {
+        return stationID;
+    }
+
+    public void setStationID(String stationID) {
+        this.stationID = stationID;
+    }
 
     public String getID() {
         return ID;
@@ -50,11 +77,15 @@ public class BusPosition {
     @Override
     public String toString() {
         return "BusPosition{" +
-                "ID='" + ID + '\'' +
+                "lineName='" + lineName + '\'' +
+                ", ID='" + ID + '\'' +
+                ", carID='" + carID + '\'' +
+                ", stationID='" + stationID + '\'' +
                 ", GPSX='" + GPSX + '\'' +
                 ", GPSY='" + GPSY + '\'' +
                 ", distance='" + distance + '\'' +
-                '}'+latLng.latitude+','+latLng.longitude;
+                ", latLng=" + latLng +
+                '}';
     }
 
 //    public void sumDistance(double gpsX, double gpsY){

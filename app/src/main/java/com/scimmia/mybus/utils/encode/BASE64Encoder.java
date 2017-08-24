@@ -1,4 +1,4 @@
-package com.scimmia.mybus.utils;
+package com.scimmia.mybus.utils.encode;
 
 import java.io.IOException;
 import java.io.OutputStream;
