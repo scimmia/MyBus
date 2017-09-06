@@ -8,7 +8,7 @@
     <color name="darkgrey"> #999999</color>
     <color name="white"> #FFFFFF</color>
     <color name="red"> #FF0000</color>
-    <color name="blue">#4c90f9</color>
+    <color name="blue">#5c96f1</color>
     <color name="gary">#898989</color>
     <color name="gray_lite">#c5c5c5</color>
     <color name="phone_bg">#f6f6f6</color>
@@ -16,4 +16,15 @@
     <color name="itemlist">#f4f4f4</color>
     <color name="watermark_hint">#ccffffff</color>
     <color name="act_background">#efefef</color>
+    <color name="material_primary_green">#ff7bddab</color>
+    <color name="main_background">#ffdfcd86</color>
+
+    <color name="list_item_title">#fff</color>
+    <color name="list_background">#9F7833</color>
+    <color name="list_background_pressed">#992416</color>
+    <color name="list_divider">#272727</color>
+    <color name="counter_text_bg">#626262</color>
+    <color name="counter_text_color">#c5c4c4</color>
+    <color name="material_base_color">#0056d3</color>
+    <color name="material_primary_color">#f30000</color>
 </resources>
