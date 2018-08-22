@@ -32,7 +32,7 @@ public class DebugLog {
     }
 
 	public static boolean isDebuggable(){
-		return true;
+		return false;
 	}
 
 	private static String createLog(String log){

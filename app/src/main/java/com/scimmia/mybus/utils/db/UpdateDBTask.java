@@ -52,9 +52,7 @@ public class UpdateDBTask  extends AsyncTask<Void,Integer,String> {
             String oldDBPath = mContent.getFilesDir().getParentFile().getPath()+"/databases/bus.db";
 
             ZipInputStream zin = new ZipInputStream(new FileInputStream(GlobalData.newDBFile));
-            ZipEntry ze = null;
-            while ((ze = zin.getNextEntry()) != null) {
-
+            if ((zin.getNextEntry()) != null) {
                 OutputStream ostream = new FileOutputStream(oldDBPath);
                 Global.writeExtractedFileToDisk(zin,ostream);
             }

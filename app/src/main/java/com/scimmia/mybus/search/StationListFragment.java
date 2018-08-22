@@ -173,17 +173,21 @@ public class StationListFragment extends BaseFragment implements Toolbar.OnMenuI
                         busPositionParam.getFormBody(Global.getRandom(content)), new HttpListener() {
                     @Override
                     public void onSuccess(String tag, String content) {
-                        LinkedList<BusPosition> t = Global.getBusPositions(content,_mActivity,tag);
-                        String result = "";
-                        for (BusPosition b :t) {
-                            DebugLog.e(b.toString());
-                            result += b.getCarID()+'\t'+b.getStationID()+'\n';
+                        try {
+                            LinkedList<BusPosition> t = Global.getBusPositions(content,_mActivity,tag);
+                            String result = "";
+                            for (BusPosition b :t) {
+                                DebugLog.e(b.toString());
+                                result += b.getCarID()+'\t'+b.getStationID()+'\n';
+                            }
+                            if (StringUtils.isEmpty(result)){
+                                result = "暂无车辆信息";
+                            }
+                            currentStationInfo.setBusPositions(result);
+                            mAdapter.notifyDataSetChanged();
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                        if (StringUtils.isEmpty(result)){
-                            result = "暂无车辆信息";
-                        }
-                        currentStationInfo.setBusPositions(result);
-                        mAdapter.notifyDataSetChanged();
                     }
                 }).execute();
             }

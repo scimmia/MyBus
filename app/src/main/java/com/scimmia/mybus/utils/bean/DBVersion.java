@@ -12,6 +12,10 @@ public class DBVersion {
         return dbVersion;
     }
 
+    public double getDbSize() {
+        return dbSize;
+    }
+
     @Override
     public String toString() {
         return "DBVersion{" +

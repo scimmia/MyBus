@@ -14,42 +14,40 @@ import java.io.IOException;
  * Created by ASUS on 2014/12/4.
  */
 public class HttpTask extends AsyncTask<Void,Void,String> {
-    public static final MediaType JSON  = MediaType.parse("application/json; charset=utf-8");
     ProgressDialog mpDialog;
     Context mContent;
     String msgToShow;
 
     String mUrl;
     String mTag;
-    String mJson;
+    RequestBody mFormBody;
 
     HttpListener mHttpListener;
 
     private static OkHttpClient okHttpClient;
-    public static OkHttpClient getOkHttpClient(){
+    private static OkHttpClient getOkHttpClient(){
         if (okHttpClient == null){
             okHttpClient = new OkHttpClient();
         }
         return okHttpClient;
     }
 
-    public HttpTask(Context mContent, String msgToShow, String mAct, String json) {
-        this(mContent,msgToShow,mAct,json,null);
+    public HttpTask(Context mContent, String msgToShow,String url, String tag, HttpListener httpListener) {
+        this(mContent,msgToShow,url,tag,null,httpListener);
     }
 
-    public HttpTask(Context mContent, String msgToShow, String mAct, String json, HttpListener httpListener) {
+    public HttpTask(Context mContent, String msgToShow,String url, String tag, RequestBody formBody, HttpListener httpListener) {
         this.mContent = mContent;
         this.msgToShow = msgToShow;
-        this.mTag = mAct;
-        if (StringUtils.isNotEmpty(json)) {
-            this.mJson = json;
-        }else {
-            this.mJson = "";
-        }
+        this.mUrl = url;
+        this.mTag = tag;
+        this.mFormBody = formBody;
+
         mHttpListener = httpListener;
-        this.mUrl = "http://ytbus.jiaodong.cn:4990/BusPosition.asmx/"+mAct+mJson;
+//        mUrl = "http://ytbus.jiaodong.cn:4990/BusPosition.asmx/GetBusLineStatusEncry";
         DebugLog.e(this.mUrl);
     }
+
     @Override
     protected void onPreExecute(){
         super.onPreExecute();
@@ -72,9 +70,17 @@ public class HttpTask extends AsyncTask<Void,Void,String> {
 
     @Override
     protected String doInBackground(Void... params) {
-        Request request = new Request.Builder().tag(mTag)
-                .url(mUrl)
-                .build();
+        Request request;
+        if (mFormBody == null){
+            request = new Request.Builder().tag(mTag)
+                    .url(mUrl)
+                    .build();
+        }else {
+            request = new Request.Builder().tag(mTag)
+                    .url(mUrl)
+                    .post(mFormBody)
+                    .build();
+        }
         if (request != null){
             OkHttpClient okHttpClient = getOkHttpClient();
             try {

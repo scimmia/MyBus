@@ -29,6 +29,12 @@ public class BaseFragment extends SupportFragment{
         appMsg.show();
 
     }
+    public void showToast(String message,int duration){
+        cancelToast();
+        appMsg = Toast.makeText(_mActivity, message, duration);
+        appMsg.show();
+
+    }
     public void cancelToast(){
         if (appMsg!=null){
             appMsg.cancel();

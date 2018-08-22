@@ -1,19 +1,34 @@
 package com.scimmia.mybus.utils;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import com.amap.api.maps2d.model.LatLng;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.scimmia.mybus.R;
 import com.scimmia.mybus.utils.bean.BusPosition;
 import com.scimmia.mybus.utils.bean.BusPositionParam;
 import com.scimmia.mybus.utils.bean.DBVersion;
 import com.scimmia.mybus.utils.db.BusDBManager;
 import com.scimmia.mybus.utils.encode.AES;
+//import com.tencent.mm.sdk.modelmsg.SendMessageToWX;
+//import com.tencent.mm.sdk.modelmsg.WXMediaMessage;
+//import com.tencent.mm.sdk.modelmsg.WXWebpageObject;
+//import com.tencent.mm.sdk.openapi.IWXAPI;
+//import com.tencent.mm.sdk.openapi.WXAPIFactory;
+import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
+import com.tencent.mm.opensdk.modelmsg.WXMediaMessage;
+import com.tencent.mm.opensdk.modelmsg.WXWebpageObject;
+import com.tencent.mm.opensdk.openapi.IWXAPI;
+import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.DecimalFormat;
 import java.util.LinkedList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -84,4 +99,55 @@ public class Global {
         in.close();
     }
 
+    public static String getFileSize(double b){
+        return new DecimalFormat("#.00").format(b/1024/1024)+"M";
+    }
+
+    /**
+     * 微信分享：分享网页
+     * @param context
+     * @param scene
+     */
+    public static void shareToWeChatWithWebpage(Context context, int scene,String url){
+        IWXAPI iwxapi = WXAPIFactory.createWXAPI(context, GlobalData.INVITE_WEIXIN_API);
+
+        if (!iwxapi.isWXAppInstalled()){
+            DebugLog.e("您尚未安装微信客户端");
+            return;
+        }
+
+        WXWebpageObject wxWebpageObject = new WXWebpageObject();
+        wxWebpageObject.webpageUrl = url;
+
+        WXMediaMessage wxMediaMessage = new WXMediaMessage(wxWebpageObject);
+        wxMediaMessage.mediaObject = wxWebpageObject;
+        wxMediaMessage.title = GlobalData.INVITE_TITLE;
+        wxMediaMessage.description = GlobalData.INVITE_CONTENT;
+        wxMediaMessage.thumbData =
+                bmpToByteArray(BitmapFactory.decodeResource(context.getResources(), R.drawable.lanacher), true);
+
+        SendMessageToWX.Req req = new SendMessageToWX.Req();
+        req.transaction = String.valueOf(System.currentTimeMillis());
+        req.message = wxMediaMessage;
+        req.scene = scene;
+
+        iwxapi.sendReq(req);
+    }
+
+    public static byte[] bmpToByteArray(final Bitmap bmp, final boolean needRecycle) {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.PNG, 100, output);
+        if (needRecycle) {
+            bmp.recycle();
+        }
+
+        byte[] result = output.toByteArray();
+        try {
+            output.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
 }

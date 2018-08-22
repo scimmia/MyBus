@@ -80,7 +80,7 @@ public class MainFragment extends BaseFragment {
                 .addItem(new BottomNavigationItem(R.drawable.main_station, "线路").setInactiveIconResource(R.drawable.main_station))
                 .addItem(new BottomNavigationItem(R.drawable.main_road, "实时").setInactiveIconResource(R.drawable.main_road))
                 .addItem(new BottomNavigationItem(R.drawable.main_help, "帮助").setInactiveIconResource(R.drawable.main_help))
-                .addItem(new BottomNavigationItem(R.drawable.main_ad, "广告").setInactiveIconResource(R.drawable.main_ad))
+                .addItem(new BottomNavigationItem(R.drawable.main_ad, "分享").setInactiveIconResource(R.drawable.main_ad))
                 .initialise();
 
         mBottomNavigationBar.setTabSelectedListener(new BottomNavigationBar.OnTabSelectedListener(){

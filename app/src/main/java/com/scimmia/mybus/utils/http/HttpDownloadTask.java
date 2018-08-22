@@ -40,7 +40,7 @@ public class HttpDownloadTask extends AsyncTask<Void,Integer,String>{
     protected void onPreExecute(){
         super.onPreExecute();
         mpDialog = new ProgressDialog(mContent, ProgressDialog.THEME_HOLO_LIGHT);
-        mpDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);//设置风格为圆形进度条
+//        mpDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);//设置风格为圆形进度条
         mpDialog.setMessage(msgToShow);
         mpDialog.setCancelable(true);
 
