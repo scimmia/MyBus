@@ -54,4 +54,8 @@ public interface GlobalData  {
     String INVITE_CONTENT = "带有实时路况的公交查询。";
     String INVITE_TARGET_URL = apkURL;
 
+    String getBikeStations = "http://www.ytzxc.com/ytmap/ibikestation.asp";
+    String getAvalibalBike = "http://www.ytzxc.com/ytmap/ibikegif.asp?flag=1&id=";
+    String getAvalibalStation = "http://www.ytzxc.com/ytmap/ibikegif.asp?flag=2&id=";
+
 }

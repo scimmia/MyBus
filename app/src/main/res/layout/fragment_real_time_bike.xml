@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/activity_line_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:context="com.scimmia.mybus.realtime.RealTimeBusFragment">
+    <include
+            layout="@layout/toolbar"
+            android:id="@+id/toolbar_realtime"/>
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+        <com.amap.api.maps2d.MapView
+                android:id="@+id/map"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|left"
+                android:background="@color/gary"
+                android:orientation="vertical"
+                android:padding="5dp" >
+
+            <TextView
+                android:id="@+id/tv_station"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="站点：" />
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                >
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="可用车辆" />
+
+                <WebView
+                    android:id="@+id/wb_bike"
+                    android:layout_width="30sp"
+                    android:layout_height="17dp"
+                    />
+            </LinearLayout>
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:layout_weight="1"
+                >
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="可用泊位" />
+
+                <WebView
+                    android:id="@+id/wb_station"
+                    android:layout_width="30sp"
+                    android:layout_height="17dp"
+                    />
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+</LinearLayout>

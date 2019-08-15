@@ -36,7 +36,7 @@ public class BusDBManager {
             if (StringUtils.isNotEmpty(line)){
                 Cursor c = db.rawQuery("SELECT BusLine.ID as lineID,BusLine.BUSLINENAME as linename,BusLine.ATTACH as attach,a.STATIONNAME as stationa,b.STATIONNAME as stationb \n" +
                         "FROM BusLine INNER JOIN STATION AS a ON (BusLine.STATIONA = a.ID AND BusLine.\"ATTACH\" = a.\"ATTACH\")  INNER JOIN STATION as b ON (BusLine.STATIONB = b.ID AND BusLine.\"ATTACH\" = b.\"ATTACH\")\n" +
-                        "WHERE BusLine.BUSLINENAME LIKE '"+line.toUpperCase()+"%' ORDER BY 0+linename", null);
+                        "WHERE BusLine.BUSLINENAME LIKE '%"+line.toUpperCase()+"%' ORDER BY 0+linename", null);
                 while (c.moveToNext()) {
                     LineInfo temp = new LineInfo();
                     temp.setLineID(c.getString(c.getColumnIndex("lineID")));

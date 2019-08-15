@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">烟台公交定制版</string>
+    <string name="app_name">烟台出行</string>
     <string name="title_activity_line_list">LineListActivity</string>
     <string name="action_settings">Settings</string>
     <string name="cheese_hunt_hint">请输入要查询的线路</string>
