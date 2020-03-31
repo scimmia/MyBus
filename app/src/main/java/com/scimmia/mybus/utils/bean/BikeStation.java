@@ -54,7 +54,7 @@ public class BikeStation {
     public LatLng getLatLng() {
         CoordinateConverter converter  = new CoordinateConverter();
         // CoordType.GPS 待转换坐标类型
-        converter.from(CoordinateConverter.CoordType.GPS);
+        converter.from(CoordinateConverter.CoordType.GOOGLE);
         // sourceLatLng待转换坐标点 LatLng类型
         converter.coord(new LatLng(getLat(),getLng()));
         // 执行转换操作

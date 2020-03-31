@@ -42,7 +42,7 @@ public interface GlobalData  {
     String downNewAPKVersionTag = "downNewAPKVersionTag";
     String _api_key = "8c48e2a019fbf1074b09d0f774cda65f";
     String aId = "4caf5d048d32a96cb2ff89e8dce43981";
-    String checkNewAPKVersion = "https://coding.net/u/yantaibus/p/main/git/raw/master/v.json";
+    String checkNewAPKVersion = "http://26fkn0.coding-pages.com/v.json";
 //    String checkNewAPKVersion = "http://www.pgyer.com/apiv1/app/viewGroup";
     String downNewAPKVersion = "http://www.pgyer.com/apiv1/app/install?aKey=%s&_api_key="+_api_key;
 

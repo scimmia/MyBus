@@ -73,6 +73,8 @@ public class RealTimeBikeFragment extends BaseFragment implements Toolbar.OnMenu
             aMap.setTrafficEnabled(true);
             aMap.setOnMarkerClickListener(markerClickListener);
         }
+        refresh();
+
         return view;
     }
     private void refresh(){
