@@ -13,14 +13,18 @@ import com.amap.api.maps2d.model.LatLng;
 import com.amap.api.maps2d.model.Marker;
 import com.amap.api.maps2d.model.MarkerOptions;
 import com.google.gson.Gson;
+import com.scimmia.mybus.utils.DebugLog;
 import com.scimmia.mybus.utils.GlobalData;
 import com.scimmia.mybus.utils.bean.BusPosition;
 import com.scimmia.mybus.R;
 import com.scimmia.mybus.utils.bean.BusPositionParam;
 import com.scimmia.mybus.utils.Global;
 import com.scimmia.mybus.utils.bean.StationInfo;
+import com.scimmia.mybus.utils.db.BusDBManager;
 import com.scimmia.mybus.utils.http.HttpListener;
 import com.scimmia.mybus.utils.http.HttpTask;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.LinkedList;
 
@@ -33,6 +37,10 @@ public class RealTimeStationActivity extends AppCompatActivity implements Toolba
     private Marker marker;
     private Toolbar mToolbar;
 
+    String mLineName;
+    String mUporDown;
+    StationInfo mStationInfo;
+    LinkedList<StationInfo> mStationList;
     LatLng mLatLng;
     BusPositionParam mBusPositionParam;
     String mTag;
@@ -44,20 +52,21 @@ public class RealTimeStationActivity extends AppCompatActivity implements Toolba
         setContentView(R.layout.activity_real_time_station);
         busPositions = new LinkedList<>();
         mToolbar = (Toolbar) findViewById(R.id.toolbar_rtstation);
-        mToolbar.setTitle("实时");
         mToolbar.inflateMenu(R.menu.stationmap);
         mToolbar.setOnMenuItemClickListener(this);
 
-        String lineID = getIntent().getStringExtra("lineID");
-        String attach = getIntent().getStringExtra("attach");
+        mLineName = getIntent().getStringExtra("lineID");
+        mUporDown = getIntent().getStringExtra("attach");
+        mToolbar.setTitle("实时"+ '-' + mLineName+ '|' + mUporDown);
         String temp = getIntent().getStringExtra("stationInfo");
-        StationInfo stationInfo = new Gson().fromJson(temp,StationInfo.class);
+        mStationInfo = new Gson().fromJson(temp,StationInfo.class);
+        mStationList = new BusDBManager(_mActivity).queryLineStations(mLineName,mUporDown);
+
         CoordinateConverter converter  = new CoordinateConverter();
-        converter.from(CoordinateConverter.CoordType.GPS);
-        converter.coord(new LatLng(stationInfo.getLat(),stationInfo.getLon()));
+        converter.from(CoordinateConverter.CoordType.BAIDU);
+        converter.coord(new LatLng(mStationInfo.getLat(),mStationInfo.getLon()));
         mLatLng = converter.convert();
-        mTag = lineID+'-'+attach;
-        mBusPositionParam = new BusPositionParam(stationInfo.getStationID(),lineID,stationInfo.getLineStatus(),attach);
+        mTag = mLineName+'-'+mUporDown;
 
         mapView = (MapView) findViewById(R.id.rtstationmap);
         mapView.onCreate(savedInstanceState); // 此方法必须重写
@@ -72,11 +81,29 @@ public class RealTimeStationActivity extends AppCompatActivity implements Toolba
     }
 
     private void getRandom(){
-        new HttpTask(_mActivity, GlobalData.httpMsg, GlobalData.getRandom,GlobalData.getRandomTag, new HttpListener() {
+        new HttpTask(_mActivity, GlobalData.httpMsg, Global.getBusStatusUrl(mLineName, mUporDown),
+                mLineName + '-' + mUporDown,
+                null, new HttpListener() {
             @Override
             public void onSuccess(String tag, String content) {
-                new HttpTask(_mActivity, GlobalData.httpMsg, GlobalData.getBusLineStatusEncry,mTag,
-                        mBusPositionParam.getFormBody(Global.getRandom(content)), positionListener).execute();
+                try {
+                    LinkedList<BusPosition> t = Global.getBusPositions(content, mStationInfo.getStationID(),mStationList);
+                    if (aMap != null) {
+                        aMap.clear();
+                    }
+                    markerOption = new MarkerOptions().icon(BitmapDescriptorFactory
+                            .fromResource(R.drawable.location))
+                            .position(mLatLng)
+                            .draggable(false);
+                    marker = aMap.addMarker(markerOption);
+                    marker.showInfoWindow();
+                    for (BusPosition m :t) {
+                        addMarkersToMap(m);
+                    }
+                    busPositions.addAll(t);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }).execute();
     }
@@ -88,7 +115,8 @@ public class RealTimeStationActivity extends AppCompatActivity implements Toolba
                 if (aMap != null) {
                     aMap.clear();
                 }
-                LinkedList<BusPosition> t = Global.getBusPositions(content,_mActivity,tag);
+                LinkedList<BusPosition> t = new LinkedList<BusPosition>();
+//                LinkedList<BusPosition> t = Global.getBusPositions(content,_mActivity,tag);
                 markerOption = new MarkerOptions().icon(BitmapDescriptorFactory
                         .fromResource(R.drawable.location))
                         .position(mLatLng)

@@ -5,17 +5,21 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.content.FileProvider;
+
 import com.google.gson.Gson;
 import com.scimmia.mybus.utils.DebugLog;
 import com.scimmia.mybus.utils.Global;
 import com.scimmia.mybus.utils.GlobalData;
+import com.scimmia.mybus.utils.bean.DBInfo;
 import com.scimmia.mybus.utils.bean.DBVersion;
 import com.scimmia.mybus.utils.bean.UpdateInfo;
 import com.scimmia.mybus.utils.db.BusDBManager;
@@ -23,14 +27,17 @@ import com.scimmia.mybus.utils.db.UpdateDBTask;
 import com.scimmia.mybus.utils.http.HttpDownloadTask;
 import com.scimmia.mybus.utils.http.HttpListener;
 import com.scimmia.mybus.utils.http.HttpTask;
+
 import me.yokeyword.fragmentation.SupportActivity;
 import me.yokeyword.fragmentation.anim.DefaultHorizontalAnimator;
 import me.yokeyword.fragmentation.anim.FragmentAnimator;
 import okhttp3.FormBody;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.AppSettingsDialog;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -38,9 +45,10 @@ import pub.devrel.easypermissions.EasyPermissions;
 import java.io.File;
 import java.util.List;
 
-public class MainActivity extends SupportActivity  implements EasyPermissions.PermissionCallbacks {
+public class MainActivity extends SupportActivity implements EasyPermissions.PermissionCallbacks {
     private Context _mActivity;
     private static final int RC_Write = 123;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,32 +61,36 @@ public class MainActivity extends SupportActivity  implements EasyPermissions.Pe
         checkDBUpdate();
     }
 
-    private void checkDBUpdate(){
+    private void checkDBUpdate() {
         if (EasyPermissions.hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            new HttpTask(_mActivity, GlobalData.httpMsg, GlobalData.getNewDBVersion, GlobalData.getNewDBVersionTag,
-                    RequestBody.create(MediaType.parse("application/json; charset=utf-8"), GlobalData.getNewDBVersionXML), new HttpListener() {
+            final String currentVersion = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).getString(GlobalData.BusDBVersion, "0");
+            new HttpTask(_mActivity, GlobalData.httpMsg, GlobalData.getNewDBVersion + currentVersion, GlobalData.getNewDBVersionTag,
+                    null, new HttpListener() {
                 @Override
                 public void onSuccess(String tag, String content) {
                     try {
-                        int currentDBVersion = new BusDBManager(_mActivity).getDBVersion();
-                        DBVersion dbVersion = Global.getDBVersion(content);
-                        DebugLog.e(currentDBVersion+"---"+dbVersion.toString());
-                        if (currentDBVersion < dbVersion.getDbVersion()) {
-                            new AlertDialog.Builder(_mActivity)
-                                    .setTitle("数据更新提示")
-                                    .setMessage("发现新数据\n文件大小："+Global.getFileSize(dbVersion.getDbSize())
-                                            +"\n文件下载需要读写权限，\n如有提醒请允许"
-                                    )
-                                    .setNegativeButton("现在更新", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            beginDownloadDB();
-                                        }
-                                    })
-                                    .setPositiveButton("以后再说",null)
-                                    .setCancelable(false)
-                                    .show();
+                        int currentDBVersion = Integer.parseInt(currentVersion);
+                        final DBInfo dbInfo = new Gson().fromJson(content, DBInfo.class);
+                        if (dbInfo.getStatus() == 1) {
+                            int remoteDBVersion = Integer.parseInt(dbInfo.getVersion());
+                            DebugLog.e(currentDBVersion + "---" + remoteDBVersion);
+                            if (currentDBVersion < remoteDBVersion) {
+                                new AlertDialog.Builder(_mActivity)
+                                        .setTitle("数据更新提示")
+                                        .setMessage("发现新数据\n文件下载需要读写权限，\n如有提醒请允许"
+                                        )
+                                        .setNegativeButton("现在更新", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                beginDownloadDB(dbInfo.getDbPath(),dbInfo.getVersion());
+                                            }
+                                        })
+                                        .setPositiveButton("以后再说", null)
+                                        .setCancelable(false)
+                                        .show();
+                            }
                         }
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -91,16 +103,26 @@ public class MainActivity extends SupportActivity  implements EasyPermissions.Pe
     }
 
     @AfterPermissionGranted(RC_Write)
-    private void beginDownloadDB(){
+    private void beginDownloadDB(String url, final String dbVersion) {
         new HttpDownloadTask(
-                _mActivity, GlobalData.downNewDBVersion, GlobalData.downNewDBVersionTag,
+                _mActivity, url, GlobalData.downNewDBVersionTag,
                 GlobalData.newDBFile, new HttpListener() {
             @Override
             public void onSuccess(String tag, String content) {
-                new UpdateDBTask(_mActivity,null).execute();
+                new UpdateDBTask(_mActivity, new HttpListener() {
+                    @Override
+                    public void onSuccess(String tag, String content) {
+                        if (!content.equals("error")){
+                            SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).edit();
+                            editor.putString(GlobalData.BusDBVersion, dbVersion);
+                            editor.apply();
+                        }
+                    }
+                }).execute();
             }
         }).execute();
     }
+
     @Override
     public void onBackPressedSupport() {
         // 对于 4个类别的主Fragment内的回退back逻辑,已经在其onBackPressedSupport里各自处理了
@@ -131,21 +153,21 @@ public class MainActivity extends SupportActivity  implements EasyPermissions.Pe
 //        }
     }
 
-    private void checkUpdate(){
+    private void checkUpdate() {
         new HttpTask(_mActivity, GlobalData.httpMsg, GlobalData.checkNewAPKVersion, GlobalData.checkNewAPKVersionTag,
                 new HttpListener() {
                     @Override
                     public void onSuccess(String tag, String content) {
-                        final UpdateInfo updateInfo = new Gson().fromJson(content,UpdateInfo.class);
+                        final UpdateInfo updateInfo = new Gson().fromJson(content, UpdateInfo.class);
                         try {
                             PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
-                            if (packageInfo.versionCode < updateInfo.getVersionCode()){
+                            if (packageInfo.versionCode < updateInfo.getVersionCode()) {
                                 new AlertDialog.Builder(_mActivity)
                                         .setTitle("升级信息提示")
-                                        .setMessage("发现新版本："+updateInfo.getVersionName()
-                                                +"\n更新内容："+updateInfo.getUpdateLog()
-                                                +"\n文件大小："+Global.getFileSize(NumberUtils.toDouble(updateInfo.getFileSize()))
-                                                +"\n文件下载需要读写权限，\n如有提醒请允许"
+                                        .setMessage("发现新版本：" + updateInfo.getVersionName()
+                                                + "\n更新内容：" + updateInfo.getUpdateLog()
+                                                + "\n文件大小：" + Global.getFileSize(NumberUtils.toDouble(updateInfo.getFileSize()))
+                                                + "\n文件下载需要读写权限，\n如有提醒请允许"
                                         )
                                         .setNegativeButton("现在更新", new DialogInterface.OnClickListener() {
                                             @Override
@@ -157,7 +179,7 @@ public class MainActivity extends SupportActivity  implements EasyPermissions.Pe
                                             @Override
                                             public void onClick(DialogInterface dialogInterface, int i) {
                                                 String t = updateInfo.getVersionName();
-                                                if (StringUtils.contains(t,"b")){
+                                                if (StringUtils.contains(t, "b")) {
                                                     finish();
                                                 }
                                             }
@@ -221,9 +243,9 @@ public class MainActivity extends SupportActivity  implements EasyPermissions.Pe
 //    }
 
     @AfterPermissionGranted(RC_Write)
-    private void beginDownload(String url){
+    private void beginDownload(String url) {
         new HttpDownloadTask(
-                _mActivity,url , GlobalData.downNewAPKVersionTag,
+                _mActivity, url, GlobalData.downNewAPKVersionTag,
                 GlobalData.newapkFile, new HttpListener() {
             @Override
             public void onSuccess(String tag, String content) {
@@ -237,7 +259,7 @@ public class MainActivity extends SupportActivity  implements EasyPermissions.Pe
         }).execute();
     }
 
-    private void installNewApk( String apkPath) {
+    private void installNewApk(String apkPath) {
         if (StringUtils.isEmpty(apkPath)) {
             return;
         }

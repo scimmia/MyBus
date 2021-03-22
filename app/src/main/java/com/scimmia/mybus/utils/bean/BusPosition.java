@@ -128,7 +128,7 @@ public class BusPosition {
     public void setLatLng(){
         CoordinateConverter converter  = new CoordinateConverter();
         // CoordType.GPS 待转换坐标类型
-        converter.from(CoordinateConverter.CoordType.GPS);
+        converter.from(CoordinateConverter.CoordType.BAIDU);
         // sourceLatLng待转换坐标点 LatLng类型
         converter.coord(new LatLng(NumberUtils.toDouble(getGPSY()),NumberUtils.toDouble(getGPSX())));
         // 执行转换操作

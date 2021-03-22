@@ -1,0 +1,8 @@
+POST http://ytbus.jiaodong.cn:4998/SynBusSoftWebservice/services/SynBusSoft
+200 OK (text/xml)
+
+http://ytbus.jiaodong.cn:4998/SynBusSoftWebservice/DownloadServlet?method=downloadNewDb
+
+http://api1.jiaodong.net:81/ytbus/public/api.php/v10/bus/getPlan?timestamp=1616200670979&sign=CB5BD5131018D58590E69B5968CB9190&method=GET&lineId=1&limit=3&nonce=yNUYKO3LNdtsc0CofkLt&upordown=1
+http://api1.jiaodong.net:81/ytbus/public/api.php/v10/system/getDbConfig?version=1
+http://api1.jiaodong.net:81/ytbus/public/api.php/v10/bus/getOnlineBus?linename=1路&upordown=上行

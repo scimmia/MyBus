@@ -102,7 +102,7 @@ public class RealTimeBusFragment extends BaseFragment implements Toolbar.OnMenuI
         }
 
         CoordinateConverter converter  = new CoordinateConverter();
-        converter.from(CoordinateConverter.CoordType.GPS);
+        converter.from(CoordinateConverter.CoordType.BAIDU);
         converter.coord(new LatLng(currentStations.getFirst().getLat(),currentStations.getFirst().getLon()));
         LatLng currentStart = converter.convert();
         aMap.moveCamera(CameraUpdateFactory.changeLatLng(currentStart));
@@ -113,33 +113,43 @@ public class RealTimeBusFragment extends BaseFragment implements Toolbar.OnMenuI
         marker = aMap.addMarker(markerOption);
         marker.showInfoWindow();
 
-        new HttpTask(_mActivity, GlobalData.httpMsg, GlobalData.getRandom,GlobalData.getRandomTag, new HttpListener() {
-            @Override
-            public void onSuccess(String tag, String content) {
-                busPositions.clear();
-                lineInfo = "";
-                for (int i = currentStations.size()-1;i>=0;i--){
-                    FavStation temp = currentStations.get(i);
-                    new HttpTask(_mActivity, GlobalData.httpMsg, GlobalData.getBusLineStatusEncry,temp.getLineID()+'-'+temp.getAttach(),
-                            temp.getFormBody(Global.getRandom(content)), positionListener).execute();
+        busPositions.clear();
+        lineInfo = "";
+        for (int i = currentStations.size()-1;i>=0;i--){
+            final FavStation temp = currentStations.get(i);
+//            new HttpTask(_mActivity, GlobalData.httpMsg, GlobalData.getBusLineStatusEncry,temp.getLineID()+'-'+temp.getAttach(),
+//                    temp.getFormBody(Global.getRandom(content)), positionListener).execute();
+            new HttpTask(_mActivity, GlobalData.httpMsg, Global.getBusStatusUrl(temp.getLinename(), temp.getAttach()),
+                    temp.getLinename() + '-' + temp.getAttach(),
+                    null, new HttpListener() {
+                @Override
+                public void onSuccess(String tag, String content) {
+                    try {
+                        LinkedList<BusPosition> t = Global.getBusPositions(content, temp.getStationID(),
+                                manager.queryLineStations(temp.getLinename(),temp.getAttach()));
+                        for (int i = t.size()-1;i>=0;i--){
+                            addMarkersToMap(t.get(i));
+                        }
+                        if (t.size() > 0){
+                            lineInfo = lineInfo+t.getFirst().getLineName()+"\t"+t.getFirst().getStationID()+"\n";
+                        }
+                        showToast(lineInfo, Toast.LENGTH_LONG);
+
+                        busPositions.addAll(t);
+                        currentIcon = (currentIcon + 1)%busIcons.length;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
-//                for (FavStation temp :
-//                        currentStations) {
-//                    new HttpTask(_mActivity, GlobalData.httpMsg, GlobalData.getBusLineStatusEncry,temp.getLineID()+'-'+temp.getAttach(),
-//                            temp.getFormBody(Global.getRandom(content)), positionListener).execute();
-//                }
-            }
-        }).execute();
+            }).execute();
+        }
     }
 
     private HttpListener positionListener = new HttpListener() {
         @Override
         public void onSuccess(String tag, String content) {
             try {
-                LinkedList<BusPosition> t = Global.getBusPositions(content,_mActivity,tag);
-//            for (BusPosition m :t) {
-//                addMarkersToMap(m);
-//            }
+                LinkedList<BusPosition> t = new LinkedList<BusPosition>();
                 for (int i = t.size()-1;i>=0;i--){
                     addMarkersToMap(t.get(i));
                 }
@@ -202,144 +212,4 @@ public class RealTimeBusFragment extends BaseFragment implements Toolbar.OnMenuI
         }
         return true;
     }
-//
-//    public static RealTimeBusFragment newInstance() {
-//        RealTimeBusFragment fragment = new RealTimeBusFragment();
-//        Bundle args = new Bundle();
-//        fragment.setArguments(args);
-//        return fragment;
-//    }
-//    private int checkType = Global.GOOFFICE;
-//    private MarkerOptions markerOption;
-//    private AMap aMap;
-//    private MapView mapView;
-//    private Marker marker;
-//    private Toolbar mToolbar;
-//
-//    LinkedList<BusPosition> busPositions;
-//    @Override
-//    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-//                             Bundle savedInstanceState) {
-//        View view = inflater.inflate(R.layout.fragment_real_time_bus, container, false);
-//        busPositions = new LinkedList<>();
-//        mToolbar = (Toolbar) view.findViewById(R.id.toolbar_realtime);
-//        mToolbar.setTitle("实时");
-//        mapView = (MapView) view.findViewById(R.id.map);
-//        mapView.onCreate(savedInstanceState); // 此方法必须重写
-//        view.findViewById(R.id.gotobank).setOnClickListener(
-//                new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        if (aMap != null) {
-//                            aMap.clear();
-//                        }
-//                        if (checkType != Global.GOOFFICE) {
-//                            checkType = Global.GOOFFICE;
-//                            aMap.moveCamera(CameraUpdateFactory.changeLatLng(Global.getHomePos()));
-//                        }
-//                        markerOption = new MarkerOptions().icon(BitmapDescriptorFactory
-//                                .fromResource(R.drawable.location))
-//                                .position(Global.getHomePos())
-//                                .draggable(false);
-//                        marker = aMap.addMarker(markerOption);
-//                        marker.showInfoWindow();
-//                        getRandom();
-//                    }
-//                }
-//        );
-//        view.findViewById(R.id.gotohome).setOnClickListener(
-//                new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        if (aMap != null) {
-//                            aMap.clear();
-//                        }
-//                        if (checkType != Global.GOHOME) {
-//                            checkType = Global.GOHOME;
-//                            aMap.moveCamera(CameraUpdateFactory.changeLatLng(Global.getOfficePos()));
-//                        }
-//                        markerOption = new MarkerOptions().icon(BitmapDescriptorFactory
-//                                .fromResource(R.drawable.location))
-//                                .position(Global.getOfficePos())
-//                                .draggable(false);
-//                        marker = aMap.addMarker(markerOption);
-//                        marker.showInfoWindow();
-//                        getRandom();
-//                    }
-//                }
-//        );
-//        if (aMap == null) {
-//            aMap = mapView.getMap();
-//            aMap.moveCamera(CameraUpdateFactory.changeLatLng(Global.getHomePos()));
-//            aMap.moveCamera(CameraUpdateFactory.zoomTo(16));
-//            aMap.setTrafficEnabled(true);
-//        }
-//        return view;
-//    }
-//    void getRandom(){
-//        //"http://ytbus.jiaodong.cn:4990/BusPosition.asmx/get_random"
-//        new HttpTask(_mActivity, "loading", "get_random", "", new HttpListener() {
-//            @Override
-//            public void onSuccess(String tag, String content) {
-//                getPosition(Global.getRandom(content));
-//            }
-//        }).execute();
-//    }
-//
-//    void getPosition(String strSession){
-//        //"http://ytbus.jiaodong.cn:4990/BusPosition.asmx/GetBusLineStatusEncry?stationID=133&lineID=68&lineStatus=2&userRole=1&attach=1&strSession=jvquzmvOWHkLNQBA8YZmqw==&strFlag=JIAODONG&strIMEI=358108063421886?
-//        busPositions.clear();
-//        LinkedList<BusPositionParam> params = Global.getParams(checkType);
-//        for (BusPositionParam temp :
-//                params) {
-//            new HttpPostTask(_mActivity,"loading...",temp.getLineID()+'-'+temp.getAttach(),
-//                    temp.getFormBody(strSession), positionListener).execute();
-//        }
-//    }
-//
-//    HttpListener positionListener = new HttpListener() {
-//        @Override
-//        public void onSuccess(String tag, String content) {
-//            LinkedList<BusPosition> t = Global.getBusPositions(content,_mActivity,tag);
-//            for (BusPosition m :t) {
-//                addMarkersToMap(m);
-//            }
-//            busPositions.addAll(t);
-//        }
-//    };
-//
-//    private void addMarkersToMap(BusPosition m) {
-//        markerOption = new MarkerOptions().icon(BitmapDescriptorFactory
-//                .fromResource(R.drawable.bus))
-//                .position(m.getLatLng())
-//                .title(m.getLineName())
-//                .snippet(m.getStationID())
-//                .draggable(true);
-//        marker = aMap.addMarker(markerOption);
-//        marker.showInfoWindow();
-//    }
-//
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-//        mapView.onResume();
-//    }
-//
-//    @Override
-//    public void onPause() {
-//        super.onPause();
-//        mapView.onPause();
-//    }
-//
-//    @Override
-//    public void onSaveInstanceState(Bundle outState) {
-//        super.onSaveInstanceState(outState);
-//        mapView.onSaveInstanceState(outState);
-//    }
-//
-//    @Override
-//    public void onDestroy() {
-//        super.onDestroy();
-//        mapView.onDestroy();
-//    }
 }

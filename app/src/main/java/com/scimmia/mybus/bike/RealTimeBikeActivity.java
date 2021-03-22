@@ -89,7 +89,8 @@ public class RealTimeBikeActivity extends AppCompatActivity implements Toolbar.O
                 if (aMap != null) {
                     aMap.clear();
                 }
-                LinkedList<BusPosition> t = Global.getBusPositions(content,_mActivity,tag);
+                LinkedList<BusPosition> t = new LinkedList<BusPosition>();
+//                Global.getBusPositions(content,_mActivity,tag);
                 markerOption = new MarkerOptions().icon(BitmapDescriptorFactory
                         .fromResource(R.drawable.location))
                         .position(mLatLng)

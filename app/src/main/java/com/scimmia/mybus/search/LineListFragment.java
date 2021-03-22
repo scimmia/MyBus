@@ -160,7 +160,7 @@ public class LineListFragment extends SupportFragment {
         @Override
         protected void convert(BaseViewHolder viewHolder, LineInfo item) {
             if (item instanceof FavStation){
-                viewHolder.setText(R.id.tv_linename, item.getLinename()+'|'+((FavStation)item).getStationname())
+                viewHolder.setText(R.id.tv_linename, item.getLinename()+'|'+item.getAttach()+'|'+((FavStation)item).getStationname())
                         .setText(R.id.tv_linestation, item.getStationa() + '-' + item.getStationb());
                 String tag = ((FavStation)item).getTag();
                 if (tag.equals(GlobalData.goWork)){
@@ -171,7 +171,7 @@ public class LineListFragment extends SupportFragment {
                     viewHolder.setImageResource(R.id.img_linstar,R.drawable.fav_normal);
                 }
             }else {
-                viewHolder.setText(R.id.tv_linename, item.getLinename())
+                viewHolder.setText(R.id.tv_linename, item.getLinename()+'|'+item.getAttach())
                         .setText(R.id.tv_linestation, item.getStationa() + '-' + item.getStationb())
                         .setImageResource(R.id.img_linstar,R.drawable.fav_normal);
             }

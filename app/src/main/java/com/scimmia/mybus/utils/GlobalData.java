@@ -9,12 +9,15 @@ import java.io.File;
  */
 public interface GlobalData  {
     String BusDBInited = "BusDBInited";
+    String BusDBVersion = "BusDBVersion";
 
     String keyBefore[] = {"车牌","站"};
     String keyAfter[] = {"carID","stationID"};
 
     int upDir = 2;
     int downDir = 1;
+    String upStr = "上行";
+    String downStr = "下行";
 
     String goWork = "1";
     String goHome = "2";
@@ -26,7 +29,8 @@ public interface GlobalData  {
     String getRandomTag = "getRandomTag";
     String getRandom = "http://ytbus.jiaodong.cn:4990/BusPosition.asmx/get_random";
     String getBusLineStatusEncry = "http://ytbus.jiaodong.cn:4990/BusPosition.asmx/GetBusLineStatusEncry";
-    String getNewDBVersion = "http://ytbus.jiaodong.cn:4998/SynBusSoftWebservice/services/SynBusSoft";
+    String getBusLineStatus = "http://api1.jiaodong.net:81/ytbus/public/api.php/v10/bus/getOnlineBus?";
+    String getNewDBVersion = "http://api1.jiaodong.net:81/ytbus/public/api.php/v10/system/getDbConfig?version=";
     String getNewDBVersionTag = "getNewDBVersionTag";
     String getNewDBVersionXML = "<?xml version=\"1.0\" encoding=\"utf-8\"?><soap:Envelope xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><soap:Body><getNewDbVersion xmlns=\"http://www.dongfang-china.com/\"></getNewDbVersion></soap:Body></soap:Envelope>";
 

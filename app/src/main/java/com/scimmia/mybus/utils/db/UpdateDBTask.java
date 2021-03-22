@@ -58,6 +58,7 @@ public class UpdateDBTask  extends AsyncTask<Void,Integer,String> {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            return "error";
         }
         return "";
     }

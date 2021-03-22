@@ -17,7 +17,6 @@ import com.scimmia.mybus.utils.base.BaseFragment;
 import com.scimmia.mybus.utils.bean.BusPosition;
 import com.scimmia.mybus.R;
 import com.scimmia.mybus.realtime.RealTimeStationActivity;
-import com.scimmia.mybus.utils.bean.BusPositionParam;
 import com.scimmia.mybus.utils.DebugLog;
 import com.scimmia.mybus.utils.Global;
 import com.scimmia.mybus.utils.GlobalData;
@@ -25,6 +24,7 @@ import com.scimmia.mybus.utils.bean.*;
 import com.scimmia.mybus.utils.db.BusDBManager;
 import com.scimmia.mybus.utils.http.HttpListener;
 import com.scimmia.mybus.utils.http.HttpTask;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashSet;
@@ -38,8 +38,8 @@ public class StationListFragment extends BaseFragment implements Toolbar.OnMenuI
     public static StationListFragment newInstance(LineInfo lineInfo) {
         StationListFragment fragment = new StationListFragment();
         Bundle args = new Bundle();
-        args.putString("lineInfo",new Gson().toJson(lineInfo));
-        args.putBoolean("isfav",lineInfo instanceof FavStation);
+        args.putString("lineInfo", new Gson().toJson(lineInfo));
+        args.putBoolean("isfav", lineInfo instanceof FavStation);
         fragment.setArguments(args);
         return fragment;
     }
@@ -53,6 +53,8 @@ public class StationListFragment extends BaseFragment implements Toolbar.OnMenuI
     BusDBManager manager;
     SingleLineInfo singleLineInfo;
 
+    String mLineName;
+    String mUporDown;
     int currentDirection;
     int currentPosition;
     StationInfo currentStationInfo;
@@ -75,25 +77,32 @@ public class StationListFragment extends BaseFragment implements Toolbar.OnMenuI
         manager = new BusDBManager(_mActivity);
         favStations = new HashSet<>();
 
-        final LineInfo lineInfo = new Gson().fromJson(getArguments().getString("lineInfo"),LineInfo.class);
-        mToolbar.setTitle(lineInfo.getLinename());
+        final LineInfo lineInfo = new Gson().fromJson(getArguments().getString("lineInfo"), LineInfo.class);
+        mLineName = lineInfo.getLinename();
+        mUporDown = lineInfo.getAttach();
+        mToolbar.setTitle(mLineName);
         singleLineInfo = manager.queryUpDownLine(lineInfo);
 
         DebugLog.e(singleLineInfo.toString());
         currentPosition = -1;
         currentStationInfo = null;
-        currentDirection = GlobalData.upDir;
-        stationInfos = singleLineInfo.getUpList();
+        if (mUporDown.equals(GlobalData.upStr)) {
+            currentDirection = GlobalData.upDir;
+            stationInfos = singleLineInfo.getUpList();
+        } else {
+            currentDirection = GlobalData.downDir;
+            stationInfos = singleLineInfo.getDownList();
+        }
 
-        if (getArguments().getBoolean("isfav")){
-            FavStation temp = new Gson().fromJson(getArguments().getString("lineInfo"),FavStation.class);
-            favStations.add(temp.getStationID()+'|'+temp.getLineStatus());
-            if (singleLineInfo.getDownList().getFirst().getLineStatus().equals(temp.getLineStatus())){
-                currentDirection = GlobalData.downDir;
-                stationInfos = singleLineInfo.getDownList();
-            }
-            for (int i =0;i<stationInfos.size();i++){
-                if (stationInfos.get(i).getStationID().equals(temp.getStationID())){
+        if (getArguments().getBoolean("isfav")) {
+            FavStation temp = new Gson().fromJson(getArguments().getString("lineInfo"), FavStation.class);
+            favStations.add(temp.getStationID() + '|' + temp.getLineStatus());
+//            if (singleLineInfo.getDownList().getFirst().getLineStatus().equals(temp.getLineStatus())) {
+//                currentDirection = GlobalData.downDir;
+//                stationInfos = singleLineInfo.getDownList();
+//            }
+            for (int i = 0; i < stationInfos.size(); i++) {
+                if (stationInfos.get(i).getStationID().equals(temp.getStationID())) {
                     currentPosition = i;
                     break;
                 }
@@ -108,7 +117,7 @@ public class StationListFragment extends BaseFragment implements Toolbar.OnMenuI
         mAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(final BaseQuickAdapter adapter, View view, int position) {
-                if (currentStationInfo != null){
+                if (currentStationInfo != null) {
                     currentStationInfo.setBusPositions("");
                 }
                 currentPosition = position;
@@ -118,27 +127,30 @@ public class StationListFragment extends BaseFragment implements Toolbar.OnMenuI
         mAdapter.setOnItemChildClickListener(new BaseQuickAdapter.OnItemChildClickListener() {
             @Override
             public void onItemChildClick(BaseQuickAdapter adapter, View view, final int position) {
-                DebugLog.e("position:"+position);
+                DebugLog.e("position:" + position);
                 StationInfo temp = (StationInfo) adapter.getData().get(position);
-                final FavStation fTemp = new FavStation(lineInfo,temp.getStationID(),temp.getLineStatus(),"1",temp.getStationName(),currentDirection,temp.getLat(),temp.getLon());
-                final String tt = temp.getStationID()+'|'+temp.getLineStatus();
-                if (favStations.contains(tt)){
+                mToolbar.setSubtitle(stationInfos.getFirst().getStationName() + "-" + singleLineInfo.getUpList().getLast().getStationName() + '|' + mUporDown);
+
+                final FavStation fTemp = new FavStation(mLineName,mUporDown,stationInfos.getFirst().getStationName(),stationInfos.getLast().getStationName(),
+                        temp.getStationID(), temp.getLineStatus(), temp.getStationName(), temp.getLat(), temp.getLon());
+                final String tt = temp.getStationID() + '|' + temp.getLineStatus();
+                if (favStations.contains(tt)) {
                     favStations.remove(tt);
                     manager.deleteFav(fTemp);
-                }else {
+                } else {
                     PopupMenu popup = new PopupMenu(_mActivity, view);
                     popup.getMenuInflater().inflate(R.menu.addfav, popup.getMenu());
 
                     popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                         public boolean onMenuItemClick(MenuItem item) {
-                            switch (item.getItemId()){
+                            switch (item.getItemId()) {
                                 case R.id.menu_addwork:
                                     fTemp.setTag(GlobalData.goWork);
                                     break;
-                                case  R.id.menu_addhome:
+                                case R.id.menu_addhome:
                                     fTemp.setTag(GlobalData.goHome);
                                     break;
-                                case  R.id.menu_addnormal:
+                                case R.id.menu_addnormal:
                                     fTemp.setTag(GlobalData.goNormal);
                                     break;
                             }
@@ -154,73 +166,69 @@ public class StationListFragment extends BaseFragment implements Toolbar.OnMenuI
             }
         });
 
-        if (currentPosition >= 0){
-            mRecyclerView.scrollToPosition(Math.max(0,currentPosition-3));
+        if (currentPosition >= 0) {
+            mRecyclerView.scrollToPosition(Math.max(0, currentPosition - 3));
             queryLineStatue();
         }
     }
 
-    private void queryLineStatue(){
+    private void queryLineStatue() {
         currentStationInfo = (StationInfo) mAdapter.getData().get(currentPosition);
-        final String lineID = singleLineInfo.getLineInfo().getLineID();
-        final String attach = singleLineInfo.getLineInfo().getAttach();
-        final BusPositionParam busPositionParam = new BusPositionParam(currentStationInfo.getStationID(),lineID,""+currentDirection,attach);
-        new HttpTask(_mActivity, GlobalData.httpMsg, GlobalData.getRandom,GlobalData.getRandomTag, new HttpListener() {
+        new HttpTask(_mActivity, GlobalData.httpMsg, Global.getBusStatusUrl(mLineName, mUporDown),
+                mLineName + '-' + mUporDown,
+                null, new HttpListener() {
             @Override
             public void onSuccess(String tag, String content) {
-                new HttpTask(_mActivity, GlobalData.httpMsg, GlobalData.getBusLineStatusEncry,
-                        lineID + '-' + attach,
-                        busPositionParam.getFormBody(Global.getRandom(content)), new HttpListener() {
-                    @Override
-                    public void onSuccess(String tag, String content) {
-                        try {
-                            LinkedList<BusPosition> t = Global.getBusPositions(content,_mActivity,tag);
-                            String result = "";
-                            for (BusPosition b :t) {
-                                DebugLog.e(b.toString());
-                                result += b.getCarID()+'\t'+b.getStationID()+'\n';
-                            }
-                            if (StringUtils.isEmpty(result)){
-                                result = "暂无车辆信息";
-                            }
-                            currentStationInfo.setBusPositions(result);
-                            mAdapter.notifyDataSetChanged();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                try {
+                    LinkedList<BusPosition> t = Global.getBusPositions(content, stationInfos.get(currentPosition).getStationID(),stationInfos);
+                    String result = "";
+                    for (BusPosition b : t) {
+                        DebugLog.e(b.toString());
+                        result += b.getCarID() + '\t' + b.getStationID() + '\n';
                     }
-                }).execute();
+                    if (StringUtils.isEmpty(result)) {
+                        result = "暂无车辆信息";
+                    }
+                    currentStationInfo.setBusPositions(result);
+                    mAdapter.notifyDataSetChanged();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }).execute();
+
     }
 
-    private void setSubTitle(){
-        switch (currentDirection){
+    private void setSubTitle() {
+        switch (currentDirection) {
             case GlobalData.upDir:
-                mToolbar.setSubtitle(singleLineInfo.getUpList().getFirst().getStationName()+"-"+singleLineInfo.getUpList().getLast().getStationName());
+                mToolbar.setSubtitle(singleLineInfo.getUpList().getFirst().getStationName() + "-" + singleLineInfo.getUpList().getLast().getStationName() + '|' + mUporDown);
                 break;
             case GlobalData.downDir:
-                mToolbar.setSubtitle(singleLineInfo.getDownList().getFirst().getStationName()+"-"+singleLineInfo.getDownList().getLast().getStationName());
+                mToolbar.setSubtitle(singleLineInfo.getDownList().getFirst().getStationName() + "-" + singleLineInfo.getDownList().getLast().getStationName() + '|' + mUporDown);
                 break;
         }
     }
+
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         int id = item.getItemId();
 
-        switch (id){
+        switch (id) {
             case R.id.change:
-                if (currentStationInfo != null){
+                if (currentStationInfo != null) {
                     currentStationInfo.setBusPositions("");
                 }
                 currentPosition = -1;
                 currentStationInfo = null;
-                switch (currentDirection){
+                switch (currentDirection) {
                     case GlobalData.upDir:
+                        mUporDown = GlobalData.downStr;
                         currentDirection = GlobalData.downDir;
                         stationInfos = singleLineInfo.getDownList();
                         break;
                     case GlobalData.downDir:
+                        mUporDown = GlobalData.upStr;
                         currentDirection = GlobalData.upDir;
                         stationInfos = singleLineInfo.getUpList();
                         break;
@@ -229,13 +237,13 @@ public class StationListFragment extends BaseFragment implements Toolbar.OnMenuI
                 mAdapter.setNewData(stationInfos);
                 break;
             case R.id.map:
-                if (currentStationInfo == null){
+                if (currentStationInfo == null) {
                     showToast("请先选择要查看的站点");
-                }else {
-                    Intent intent = new Intent(_mActivity,RealTimeStationActivity.class);
-                    intent.putExtra("lineID",singleLineInfo.getLineInfo().getLineID());
-                    intent.putExtra("attach",singleLineInfo.getLineInfo().getAttach());
-                    intent.putExtra("stationInfo",new Gson().toJson(currentStationInfo));
+                } else {
+                    Intent intent = new Intent(_mActivity, RealTimeStationActivity.class);
+                    intent.putExtra("lineID", singleLineInfo.getLineInfo().getLinename());
+                    intent.putExtra("attach", singleLineInfo.getLineInfo().getAttach());
+                    intent.putExtra("stationInfo", new Gson().toJson(currentStationInfo));
                     startActivity(intent);
                 }
                 break;
@@ -254,10 +262,10 @@ public class StationListFragment extends BaseFragment implements Toolbar.OnMenuI
                     .setText(R.id.tv_linemsg, item.getBusPositions())
                     .addOnClickListener(R.id.img_stationstar)
             ;
-            if (favStations.contains(item.getStationID()+'|'+item.getLineStatus())){
-                viewHolder.setImageResource(R.id.img_stationstar,R.drawable.favor_on);
-            }else {
-                viewHolder.setImageResource(R.id.img_stationstar,R.drawable.favor_off);
+            if (favStations.contains(item.getStationID() + '|' + item.getLineStatus())) {
+                viewHolder.setImageResource(R.id.img_stationstar, R.drawable.favor_on);
+            } else {
+                viewHolder.setImageResource(R.id.img_stationstar, R.drawable.favor_off);
             }
         }
     }

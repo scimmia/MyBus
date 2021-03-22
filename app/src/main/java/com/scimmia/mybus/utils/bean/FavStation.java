@@ -26,23 +26,15 @@ public class FavStation extends LineInfo{
         this.tag = tag;
         this.linename = lineInfo.getLinename();
     }
-    public FavStation(LineInfo lineInfo,String stationID, String lineStatus, String tag,String stationname,int direct,double lat,double lon) {
-        this.lineID = lineInfo.getLineID();
-        this.attach = lineInfo.getAttach();
+    public FavStation(String linename, String attach,String stationa,String stationb, String stationID, String tag,String stationname,double lat,double lon) {
+        this.lineID = linename;
+        this.attach = attach;
+        this.stationa = stationa;
+        this.stationb = stationb;
         this.stationID = stationID;
-        this.lineStatus = lineStatus;
+        this.lineStatus = "1";
         this.tag = tag;
-        switch (direct){
-            case GlobalData.upDir:
-                this.stationa = lineInfo.getStationb();
-                this.stationb = lineInfo.getStationa();
-                break;
-            case GlobalData.downDir:
-                this.stationa = lineInfo.getStationa();
-                this.stationb = lineInfo.getStationb();
-                break;
-        }
-        this.linename = lineInfo.getLinename();
+        this.linename = linename;
         this.stationname = stationname;
         this.lat = lat;
         this.lon = lon;

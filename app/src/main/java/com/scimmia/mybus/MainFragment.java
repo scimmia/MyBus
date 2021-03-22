@@ -53,15 +53,16 @@ public class MainFragment extends BaseFragment {
             mFragments[0] = LineListFragment.newInstance();
             mFragments[1] = RealTimeBusFragment.newInstance();
             mFragments[2] = ReadmeHomeFragment.newInstance();
-            mFragments[3] = RealTimeBikeFragment.newInstance();
-            mFragments[4] = ADFragment.newInstance();
+//            mFragments[3] = RealTimeBikeFragment.newInstance();
+//            mFragments[4] = ADFragment.newInstance();
 
             loadMultipleRootFragment(R.id.main_layout, 0,
                     mFragments[0],
                     mFragments[1],
-                    mFragments[2],
-                    mFragments[3],
-                    mFragments[4]);
+                    mFragments[2]
+//                    mFragments[3],
+//                    mFragments[4]
+            );
         } else {
             // 这里库已经做了Fragment恢复,所有不需要额外的处理了, 不会出现重叠问题
 
@@ -69,8 +70,8 @@ public class MainFragment extends BaseFragment {
             mFragments[0] = findChildFragment(LineListFragment.class);
             mFragments[1] = findChildFragment(RealTimeBusFragment.class);
             mFragments[2] = findChildFragment(ReadmeHomeFragment.class);
-            mFragments[3] = findChildFragment(RealTimeBikeFragment.class);
-            mFragments[4] = findChildFragment(ADFragment.class);
+//            mFragments[3] = findChildFragment(RealTimeBikeFragment.class);
+//            mFragments[4] = findChildFragment(ADFragment.class);
         }
         initView(view);
         return view;
@@ -84,8 +85,8 @@ public class MainFragment extends BaseFragment {
                 .addItem(new BottomNavigationItem(R.drawable.main_station, "线路").setInactiveIconResource(R.drawable.main_station))
                 .addItem(new BottomNavigationItem(R.drawable.main_road, "实时").setInactiveIconResource(R.drawable.main_road))
                 .addItem(new BottomNavigationItem(R.drawable.main_help, "帮助").setInactiveIconResource(R.drawable.main_help))
-                .addItem(new BottomNavigationItem(R.drawable.main_bike, "自行车").setInactiveIconResource(R.drawable.main_bike))
-                .addItem(new BottomNavigationItem(R.drawable.main_ad, "分享").setInactiveIconResource(R.drawable.main_ad))
+//                .addItem(new BottomNavigationItem(R.drawable.main_bike, "自行车").setInactiveIconResource(R.drawable.main_bike))
+//                .addItem(new BottomNavigationItem(R.drawable.main_ad, "分享").setInactiveIconResource(R.drawable.main_ad))
                 .initialise();
 
         mBottomNavigationBar.setTabSelectedListener(new BottomNavigationBar.OnTabSelectedListener(){

@@ -3,13 +3,17 @@ package com.scimmia.mybus.utils;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+
 import com.amap.api.maps2d.model.LatLng;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.scimmia.mybus.R;
 import com.scimmia.mybus.utils.bean.BusPosition;
 import com.scimmia.mybus.utils.bean.BusPositionParam;
+import com.scimmia.mybus.utils.bean.BusPostionNew;
 import com.scimmia.mybus.utils.bean.DBVersion;
+import com.scimmia.mybus.utils.bean.StationInfo;
 import com.scimmia.mybus.utils.db.BusDBManager;
 import com.scimmia.mybus.utils.encode.AES;
 //import com.tencent.mm.sdk.modelmsg.SendMessageToWX;
@@ -22,6 +26,7 @@ import com.tencent.mm.opensdk.modelmsg.WXMediaMessage;
 import com.tencent.mm.opensdk.modelmsg.WXWebpageObject;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -38,11 +43,11 @@ import java.util.zip.ZipInputStream;
  */
 public class Global {
 
-    public static String getRandom(String content){
+    public static String getRandom(String content) {
         String result = "";
         try {
             DebugLog.e(content);
-            String randomStr = StringUtils.substringBetween(content,"china.com/\">","</string>");
+            String randomStr = StringUtils.substringBetween(content, "china.com/\">", "</string>");
             DebugLog.e(randomStr);
             result = AES.Encrypt(randomStr);
             DebugLog.e(result);
@@ -52,36 +57,67 @@ public class Global {
         return result;
     }
 
-    public static LinkedList<BusPosition> getBusPositions(String content,Context context,String tag){
-        DebugLog.e(content);
-        String temp = StringUtils.substringBetween(content,"[","]");
-        if (temp == null){
-            temp = "[]";
-        }else {
-            temp = '['+temp+']';
-        }
-        temp = StringUtils.replaceEach(temp, GlobalData.keyBefore,GlobalData.keyAfter);
-        DebugLog.e(temp);
-        LinkedList<BusPosition> t = new Gson().fromJson(temp,new TypeToken<LinkedList<BusPosition>>() {
-        }.getType());
-        for (BusPosition m :t
-                ) {
-            m.setLineName(new BusDBManager(context).getLineNamebyIDAttache(tag));
-            m.setStationID(new BusDBManager(context).getstationNamebyID(m.getStationID(),StringUtils.split(tag,'-')[1]));
-//            m.sumDistance(121.3641740318,37.5471192795);
-            m.setLatLng();
-            DebugLog.e(m.toString());
-        }
-        return t;
+
+    public static String getBusStatusUrl(String linename, String upordown) {
+        return GlobalData.getBusLineStatus + "linename=" + linename + "&upordown=" + upordown;
     }
 
-    public static DBVersion getDBVersion(String content){
+    public static LinkedList<BusPosition> getBusPositions(String content, String inorder,LinkedList<StationInfo> stationInfos) {
+        DebugLog.e(content);
+        int minInorder = 200;
+        try {
+            minInorder = Integer.parseInt(inorder);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+        LinkedList<BusPosition> result = new LinkedList<BusPosition>();
+        String temp = StringUtils.substringBetween(content, "[", "]");
+        if (temp == null) {
+            temp = "[]";
+        } else {
+            temp = '[' + temp + ']';
+        }
+        temp = StringUtils.replaceEach(temp, GlobalData.keyBefore, GlobalData.keyAfter);
+        DebugLog.e(temp);
+        try {
+            LinkedList<BusPostionNew> t = new Gson().fromJson(temp, new TypeToken<LinkedList<BusPostionNew>>() {
+            }.getType());
+            for (int i = stationInfos.size()-1;i>=0;i--){
+                StationInfo s = stationInfos.get(i);
+//            for (StationInfo s : stationInfos){
+                if (Integer.parseInt(s.getStationID()) >= minInorder) {
+                    continue;
+                }
+                for (BusPostionNew m : t) {
+                    if (s.getStationID().equals(m.getInorder())){
+                        BusPosition bus = new BusPosition();
+                        bus.setStationID(s.getStationName());
+                        bus.setLineName(m.getLinename());
+                        bus.setCarID(m.getBusno());
+                        bus.setGPSX(String.valueOf(m.getJingdu()));
+                        bus.setGPSY(String.valueOf(m.getWeidu()));
+                        bus.setLatLng();
+                        result.add(bus);
+                        if (result.size() == 4)
+                            return result;
+                    }
+                }
+
+            }
+
+        } catch (JsonSyntaxException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public static DBVersion getDBVersion(String content) {
         DBVersion result = new DBVersion();
         try {
             DebugLog.e(content);
-            String tempStr = StringUtils.substringBetween(content,"<ns1:out>","</ns1:out>");
+            String tempStr = StringUtils.substringBetween(content, "<ns1:out>", "</ns1:out>");
             DebugLog.e(tempStr);
-            result = new Gson().fromJson(tempStr,DBVersion.class);
+            result = new Gson().fromJson(tempStr, DBVersion.class);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -91,7 +127,7 @@ public class Global {
     public static void writeExtractedFileToDisk(InputStream in, OutputStream outs) throws IOException {
         byte[] buffer = new byte[1024];
         int length;
-        while ((length = in.read(buffer))>0){
+        while ((length = in.read(buffer)) > 0) {
             outs.write(buffer, 0, length);
         }
         outs.flush();
@@ -99,19 +135,20 @@ public class Global {
         in.close();
     }
 
-    public static String getFileSize(double b){
-        return new DecimalFormat("#.00").format(b/1024/1024)+"M";
+    public static String getFileSize(double b) {
+        return new DecimalFormat("#.00").format(b / 1024 / 1024) + "M";
     }
 
     /**
      * 微信分享：分享网页
+     *
      * @param context
      * @param scene
      */
-    public static void shareToWeChatWithWebpage(Context context, int scene,String url){
+    public static void shareToWeChatWithWebpage(Context context, int scene, String url) {
         IWXAPI iwxapi = WXAPIFactory.createWXAPI(context, GlobalData.INVITE_WEIXIN_API);
 
-        if (!iwxapi.isWXAppInstalled()){
+        if (!iwxapi.isWXAppInstalled()) {
             DebugLog.e("您尚未安装微信客户端");
             return;
         }
